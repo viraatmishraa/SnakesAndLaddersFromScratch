@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 int move(int,int);
 void printGrid();
 typedef struct playerpos
@@ -17,8 +23,9 @@ player p2;
 
 void clear (void)
 {
-    while ( getchar() != '\n' );
+  while ( getchar() != '\n' );
 }
+int correction=0;
 void printDieClear(FILE *);
 void printGrid();
 int diceRoll();//requires stdlib and time
@@ -57,14 +64,14 @@ char grid[31][61]=
 "| 41  /0/ 42|   43|  \\-\\|45 ( )   46|   47|/-/48|49 M |   50|",
 "|     \\ \\   |     | 44\\-\\  / /|     |     /-/   | [' ']     |",
 "------/0/--------------\\-\\( )------------/-/-------\\ \\-------",
-"| 40  \\ \\ 39|   38|   37\\/ /36|   35| 34/-/   33| 32\\ \\  31|",
-"|     /0/   |     |     ( )\\  |     |  /-/|     |    \\     |",
+"| 40  \\ \\ 39|   38|   37\\/ /36|   35| 34/-/   33| 32\\ \\   31|",
+"|     /0/   |     |     ( )\\  |     |  /-/|     |    \\      |",
 "------\\ \\--------------/ /\\-\\---------/-/--------------------",
-"| 21  /0/ 22|   23| 22( )25\\-\\|   26|/-/27|   28|   29|   30|",
+"| 21  /0/ 22|   23| 24( )25\\-\\|   26|/-/27|   28|   29|   30|",
 "|     \\ \\   |     |  / /|     |     /-/   |     |     |     |",
 "------/0/-----------( )------------/-/-----------------------",
 "| 20  \\ \\ 19|   18|   17|   16|15 /-/   14|   13|   12|   11|",
-"|     |     |     |     |     |  /-/|     |     |     |cd   |",
+"|     |     |     |     |     |  /-/|     |     |     |     |",
 "--------------------------------/-/--------------------------",
 "|    1|    2|    3|    4|    5|/-/ 6|    7|    8|    9|   10|",
 "|p1 p2|     |     |     |     |     |     |     |     |     |",
@@ -75,12 +82,25 @@ int dieResult=1;
 
 int main()
 {
+// p1.position=1;
+// p2.position=1;
+// p1.y=29;
+// p1.x=1;
+// p1.previousA=' ';//common mistake: string written in place of a character 
+// p1.previousB=' ';
+// p2.y=29;
+// p2.x=4;
+// p2.previousA=' ';
+// p2.previousB=' ';
+// SkeletalAlgorithm();
+
+//this code below is made with debugging flags and ediit
 p1.position=1;
-p2.position=1;
 p1.y=29;
 p1.x=1;
 p1.previousA=' ';//common mistake: string written in place of a character 
 p1.previousB=' ';
+p2.position=1;
 p2.y=29;
 p2.x=4;
 p2.previousA=' ';
@@ -102,7 +122,7 @@ if(player==1)
         // we want to unprint from last location i.e position before modification
         grid[p1.y][p1.x]=p1.previousA; // y is horizontal movement)
         grid[p1.y][p1.x+1]=p1.previousB;
-        // we will move y one up (y-3 in this case),
+        // we will move y one block up (y-3 in this case),
         p1.y=p1.y-3;
         
         // we want to store what is in the next block in the previous A & B of the structure
@@ -110,7 +130,7 @@ if(player==1)
         p1.previousB=grid[p1.y-3][p1.x+1];   //
        
         
-        // we want to print to mod location, moving player 1
+        // we want to print to modified location, moving player 1
         grid[p1.y][p1.x]='p';
         grid[p1.y][p1.x+1]='1';
         
@@ -120,7 +140,7 @@ if(player==1)
         //we will update the grid
         printGrid();
         //return
-        if(dodgeSnLflag=1)
+        if(dodgeSnLflag==1)
         snakeandladdercheck(&p1);
         return 1;
         }
@@ -156,18 +176,10 @@ if(player==1)
         }}
 else 
 {
-  ////
-
-
-
-
-
-
-
 
 
 //optimization idea- make a pointer to the structure and instead of writing the code 2 times just assing p1 or p2 to the struct and go on with a common variable
-if(player==-1)// this line executes algo for player two when the flag is -1, which means it will be flippable
+if(player==-1){// this line executes algo for player two when the flag is -1, which means it will be flippable
     if(p2.position%10==0/*we want to change y,  cause pointer at 10 or 1*/)
         {
         // we will change the x-coordinate modification symbol by multiplying -1 to the mod-er
@@ -194,8 +206,8 @@ if(player==-1)// this line executes algo for player two when the flag is -1, whi
 
         //we will update the grid
         printGrid();
-        
-        //return
+        if(dodgeSnLflag==1)
+        snakeandladdercheck(&p2);
         return 1;
         }
     else//(/*we want to change x cause pointer in betweeen 1 and 10*/)
@@ -222,12 +234,15 @@ if(player==-1)// this line executes algo for player two when the flag is -1, whi
 
         //we will update the grid
         printGrid();
-        
-        //return
+        if(dodgeSnLflag==1)
+        snakeandladdercheck(&p2);
         return 1;
+        //return
+        
         }
-    }}
-
+    }
+  return 1;
+  }}
 
 
 
@@ -237,11 +252,9 @@ int SkeletalAlgorithm() {
     // clear();
     getchar();
         printGrid();
-    // int dieResult = diceRoll();
-    int dieResult=1;
-    // animation(dieResult);
-
-
+    int dieResult = diceRoll(); //uncomment for full execution
+    // int dieResult=1;//for debugging
+    animation(dieResult);//uncomment for full execution
 
 
     if (dieResult == 6) {
@@ -250,12 +263,8 @@ int SkeletalAlgorithm() {
           move(playerFlag,0), move(playerFlag,1);
 
       continue;
-      
-      
-
-
-    } else 
-    {
+    } 
+    else {
       if (dieResult == 1)
         move(playerFlag,1);
       if (dieResult == 2) {
@@ -281,9 +290,10 @@ int SkeletalAlgorithm() {
         move(playerFlag,1);
       }
       //to be changed to -1 for making p2 work
-      playerFlag *= 1;
+      playerFlag *= -1;
     }
   }
+  return 1;
 }
 /* 
 this from project snake:
@@ -309,8 +319,25 @@ void printGrid()
     printf("\033[H");
   for (int i = 0; i < 31; i++) {
     for (int j = 0; j < 61; j++) {
+      if(grid[i][j]=='p'&&grid[i][j+1]=='1')
+          printf(ANSI_COLOR_RED "%c" ANSI_COLOR_RESET,grid[i][j]); 
+      else
+      if(grid[i][j]=='p'&&grid[i][j+1]=='2')
+        {
+          printf(ANSI_COLOR_YELLOW "%c" ANSI_COLOR_RESET,grid[i][j]); 
+
+        }else
+
+      if(grid[i][j]=='1'&&grid[i][j-1]=='p')
+          printf(ANSI_COLOR_RED "%c" ANSI_COLOR_RESET,grid[i][j]); 
+      else
+      if(grid[i][j]=='2'&&grid[i][j-1]=='p')
+        {
+          printf(ANSI_COLOR_YELLOW "%c" ANSI_COLOR_RESET,grid[i][j]); 
+          
+        }else
       printf("%c", grid[i][j]);
-    }
+      }
     printf("\n");
   }
 }
@@ -321,6 +348,23 @@ void printGridFaster()
     printf("\033[H");
   for (int i = 0; i < 31; i++) {
     for (int j = 0; j < 61; j++) {
+      if(grid[i][j]=='p'&&grid[i][j+1]=='1')
+          printf(ANSI_COLOR_RED "%c" ANSI_COLOR_RESET,grid[i][j]); 
+      else
+      if(grid[i][j]=='p'&&grid[i][j+1]=='2')
+        {
+          printf(ANSI_COLOR_YELLOW "%c" ANSI_COLOR_RESET,grid[i][j]); 
+
+        }else
+
+      if(grid[i][j]=='1'&&grid[i][j-1]=='p')
+          printf(ANSI_COLOR_RED "%c" ANSI_COLOR_RESET,grid[i][j]); 
+      else
+      if(grid[i][j]=='2'&&grid[i][j-1]=='p')
+        {
+          printf(ANSI_COLOR_YELLOW "%c" ANSI_COLOR_RESET,grid[i][j]); 
+          
+        }else
       printf("%c", grid[i][j]);
     }
     printf("\n");
@@ -371,44 +415,73 @@ int diceRoll()
 
 int snakeandladdercheck(player *p)
 {
-if(p->position==99);
-// Snake99_19(p);
-if(p->position==66);
-// Snake66_17(p);
-if(p->position==49);
-// Snake49_31(p);
-// if(p->position==73)
-// Ladder73_94(p);
-// if(p->position==25)
-// Ladder25_63(p);
+if(p->position==99)
+Snake99_19(p); //debugged
+if(p->position==66)
+Snake66_17(p); //debugged
+if(p->position==49)
+Snake49_31(p); //debugged
+if(p->position==73)
+Ladder73_94(p); //debugged
+if(p->position==25)
+Ladder25_63(p); //debugged
 if(p->position==6)
-Ladder6_53(p);
+Ladder6_53(p); //debugged
+return 1;
 }
 
 
 int Snake99_19(player *p)//straight down x7 y2=> x7 y26
 {
-  
+if(playerFlag==-1)
+   correction=3; 
+grid[2][10]=' ';
+grid[2][11]=' ';
+
 for(int i=0;i<=23;i++)
 {
-  char next=grid[1+p->y][p->x];
-  grid[++p->y][p->x]='p';
-  grid[p->y-1][p->x]=next;
+  char next=grid[1+p->y][p->x-correction];
+  grid[++p->y][p->x-correction]='p';
+  grid[p->y-1][p->x-correction]=next;
+  grid[2][8]='\'';
 
 printGrid();
 }
-char temp=grid[2][8];
 p->position=19;
-p->x=7;
+p->x=7+correction;
 p->y=26;
+grid[25][7]='0';
+if(playerFlag==1){
 grid[26][7]='p';
+grid[26][8]='1';
+p->previousA=' ';
+p->previousB=' ';
+}
+if(playerFlag==-1){
+
+grid[26][10]='p';
+grid[26][11]='2';
+p->previousA=' ';
+p->previousB=' ';
+grid[26][7]=' ';
+}
+printGrid();
+return 1;
 }
 
+//debugged
 
 
 int Snake66_17(player *p)// down and left
 {
- p->x=p->x+3;
+  if(playerFlag==-1)
+   correction=3; 
+   else {
+   correction=0;
+   p->x=p->x+3;}
+ 
+ grid[11][31+correction] = ' ';
+ grid[11][32+correction] = ' ';
 for(int i=0;i<13;i++)
 {
   grid[++p->y][--p->x]='p';
@@ -416,94 +489,108 @@ for(int i=0;i<13;i++)
 
 printGrid();
 }
+if(playerFlag==1){
 p->position=17;
 p->x=19;
 p->y=26;
 grid[26][19]='p';
-moderP1*=-1;//will have to know the payer else this will fail
+grid[26][20]='1';
+grid[24][21]=' ';
 
+printGrid();
+
+moderP1*=-1;//will have to know the payer else this will fail
+}
+else if(playerFlag==-1)
+{
+
+p->position=17;
+p->x=19+correction;
+p->y=26;
+grid[26][19+correction]='p';
+grid[26][20+correction]='2';
+grid[24][21]=' ';
+
+printGrid();
+
+moderP2*=-1;//will have to know the payer else this will fail
+}
+return 1;
 }
 
 int Snake49_31(player *p)// down and right
 {
- p->x=p->x+3;
-
+  if(playerFlag==-1)
+   {correction=3;
+   p->x--;}
+   else{correction=0; 
+    p->x=p->x+2;
+   }
 for(int i=0;i<3;i++)
 {
   grid[++p->y][++p->x]='p';
   grid[p->y-1][p->x-1]=' ';
+  
+grid[17][49] = ' ';
+grid[17][50] = '[';
+grid[17][51] = '\'';
+grid[17][52] = ' ';
+grid[17][53] = '\'';
+grid[17][54] = ']';
+p->previousA=' ';
+p->previousB=' ';
 
 printGrid();
 }
+if(playerFlag==1){
+
 p->position=31;
-p->x=55;
+p->x=55+correction;
 p->y=20;
 grid[20][55]='p';
+grid[20][56] = '1';
+grid[20][54] = ' ';
+// grid[11][17] = '-';
+// grid[11][13] = 'P';
+// grid[11][14] = '1';
+printGrid();
 moderP1*=-1;
-
+return 1;
 
 }
+else if(playerFlag==-1)
+{
 
-// int Ladder73_94(player *p)// up and left
-// {
-//    p->x=p->x+3;
-//   for(int i=0;i<6;i++)
-// {
-
-//   grid[--p->y][--p->x]='p';
-//   grid[p->y+1][p->x+1]='-';
-
-// printGrid();
-// }
-// p->position=63;
-// p->x=37;
-// p->y=2;
-// grid[2][37]='p';
-
-// }
-
-// int Ladder25_63(player *p)// up and left
-// {
-//   p->x=p->x+4;
-//   for(int i=0;i<12;i++)
-// {
-
-//   grid[--p->y][--p->x]='p';
-//   grid[p->y+1][p->x+1]='-';
-
-// printGrid();
-// }
-// p->position=63;
-// p->x=13;
-// p->y=11;
-// grid[11][13]='p';
-// // moderP1*=-1;
-
-// }
+p->position=31;
+p->x=58;
+p->y=20;
+grid[20][58]='p';
+grid[20][59] = '2';
+grid[20][57] = ' ';
+grid[20][54] = ' ';
 
 
+printGrid();
+return 1;
+moderP2*=-1;
+}
 
-// int Ladder6_53(player *p)// up and right
-// {
-//   // p->x=p->x+3;
-// for(int i=0;i<15;i++)
-// {
+return 1;
+}
 
-//   grid[--p->y][++p->x]='p';
-//   grid[p->y+1][p->x-1]='-';
 
-// printGrid();
-// }
-// p->position=53;
-// p->x=43;
-// p->y=14;
-// grid[20][55]='p';
-// moderP1*=-1;
-
-// }
 /* ===== Ladder 6 → 53 ===== */
 int Ladder6_53(player *p)            // up and right
 {
+  if(playerFlag==1){
+  }else if(playerFlag==-1){
+    p->x=p->x-3;
+     p->previousA='-';
+     p->previousB='/';
+     grid[29][34] = ' ';
+     grid[29][35] = ' ';
+  }
+    
     for (int i = 0; i < 15; i++) {
         grid[--p->y][++p->x] = 'p';
         grid[29][32]=' ';
@@ -512,6 +599,12 @@ int Ladder6_53(player *p)            // up and right
         grid[p->y + 1][p->x - 1] = '-';
         printGrid();
     }
+if(playerFlag==1){
+
+
+
+
+      
     p->position = 53;
     p->x = 43;
     p->y = 14;
@@ -527,16 +620,49 @@ int Ladder6_53(player *p)            // up and right
 
     printGrid();
 }
+else if(playerFlag==-1){
+
+    p->position = 53;
+    p->x = 46;
+    p->y = 14;
+    grid[20][55] = ' ';
+    moderP2 *= -1;
+
+    /* new cleanup lines */
+    grid[29][31] = ' ';
+    grid[29][32] = ' ';
+    grid[14][46] = '-';
+    grid[14][46] = 'p';
+    grid[14][47] = '2';
+
+
+    printGrid();
+}return 1;
+}
 
 /* ===== Ladder 25 → 63 ===== */
 int Ladder25_63(player *p)           // up and left
 {
+    if(playerFlag==1)
     p->x = p->x + 4;
+    else
+    p->x = p->x + 1;
+
+    grid[23][25] = ' ';
+    grid[23][26] = ' ';
+        grid[23][28] = ' ';
+
+
+        grid[23][29] = ' ';
+
     for (int i = 0; i < 12; i++) {
         grid[--p->y][--p->x] = 'p';
-        grid[p->y + 1][p->x + 1] = '-';
+      if(i!=0)
+      grid[p->y + 1][p->x + 1] = '-';
         printGrid();
     }
+    if(playerFlag==1){
+    
     p->position = 63;
     p->x = 13;
     p->y = 11;
@@ -545,157 +671,215 @@ int Ladder25_63(player *p)           // up and left
     /* new cleanup lines */
     grid[23][25] = ' ';
     grid[23][26] = ' ';
-    grid[23][28] = '2';
-    grid[23][29] = '5';
+    grid[23][28] = ' ';
+    grid[23][29] = ' ';
     grid[11][17] = '-';
-    grid[11][13] = 'P';
+    grid[11][13] = 'p';
     grid[11][14] = '1';
     grid[19][25] = '\\';
     grid[20][26] = ')';
     printGrid();
-
+    }
+    if(playerFlag==-1){
+    
+    p->position = 63;
+    p->x = 16;
+    p->y = 11;
+    p->previousA='\\';
+    p->previousB='-';
+    /* new cleanup lines */
+    grid[23][25] = ' ';
+    grid[23][26] = ' ';
+    grid[23][28] = ' ';
+    grid[23][29] = ' ';
+    grid[11][16] = 'p';
+    grid[11][17] = '2';
+    grid[19][26] = '\\';
+    grid[20][26] = ')';
+    printGrid();
+    grid[11][16] = '\\';
+    grid[11][17] = '-';
   }
+  return 1;
+}
 
 /* ===== Ladder 73 → 94 ===== */
 int Ladder73_94(player *p)           // up and left
 {
+  if(playerFlag==1){
+    
+    grid[p->y][p->x]=' ';
+    grid[p->y][p->x+1]=' ';
+
     p->x = p->x + 3;
-    for (int i = 0; i < 6; i++) {
-        grid[--p->y][--p->x] = 'p';
-        grid[p->y + 1][p->x + 1] = '-';
+  }
+  else if(playerFlag==-1){
+    p->previousA='-';
+    p->previousB='\\';
+    grid[8][47] = ' ';
+
+  }
+  
+  for (int i = 0; i < 6; i++) {
+    grid[--p->y][--p->x] = 'p';
+    if(i!=0)
+    grid[p->y + 1][p->x + 1] = '-';
+    grid[8][46]=' ';
         printGrid();
     }
-    p->position = 63;
+
+    if(playerFlag==1){
+    
+    p->position = 94;
     p->x = 37;
     p->y = 2;
     grid[2][37] = 'p';
 
     /* new cleanup lines */
-    grid[9][43] = ' ';
-    grid[9][44] = ' ';
+    grid[8][43] = ' ';
+    grid[8][44] = ' ';
+    grid[8][46] = ' ';
     grid[2][40] = '-';
-    grid[2][37] = 'P';
+    grid[2][37] = 'p';
     grid[2][38] = '1';
     printGrid();
+    }
+    else if(playerFlag==-1){
+    p->position = 94;
+    p->x = 40;
+    p->y = 2;
+
+    /* new cleanup lines */
+    grid[8][43] = ' ';
+    grid[8][44] = ' ';
+    grid[8][47] = ' ';
+    grid[2][40] = 'p';
+    grid[2][41] = '2';
+    printGrid();
+    }
+    return 1;
+
   }
 
 
 // commented for debugging and removing dice animation
 
-// int animation(int dieFlag)
-// {
-//     FILE *fh;
+int animation(int dieFlag)
+{
+    FILE *fh;
   
-//     fh=fopen("frame1.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame2.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame3.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame4.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame5.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame6.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame7.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame8.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frame1.txt","r");
-//     printDie(fh);
-//     fh=fopen("frameClear.txt","r");
-//       printDieClear(fh);
-//     fh=fopen("frameClear.txt","r");
-//     printDieClear(fh);
-//     if(dieFlag==1)
-//     { 
-//             fh=fopen("frame_1onD.txt","r");
-//       printDie(fh);
-//     }
-//     if(dieFlag==2)
-//     {
+    fh=fopen("frame1.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame2.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame3.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame4.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame5.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame6.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame7.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame8.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frame1.txt","r");
+    printDie(fh);
+    fh=fopen("frameClear.txt","r");
+      printDieClear(fh);
+    fh=fopen("frameClear.txt","r");
+    printDieClear(fh);
+    if(dieFlag==1)
+    { 
+            fh=fopen("frame_1onD.txt","r");
+      printDie(fh);
+    }
+    if(dieFlag==2)
+    {
       
-//       fh=fopen("frame_2onD.txt","r");
-//       printDie(fh);
-//     }
-//     if(dieFlag==3)
-//     {
+      fh=fopen("frame_2onD.txt","r");
+      printDie(fh);
+    }
+    if(dieFlag==3)
+    {
       
-//       fh=fopen("frame_3onD.txt","r");
-//       printDie(fh);
-//     }
-//     if(dieFlag==4)
-//     {
+      fh=fopen("frame_3onD.txt","r");
+      printDie(fh);
+    }
+    if(dieFlag==4)
+    {
       
-//       fh=fopen("frame_4onD.txt","r");
-//       printDie(fh);
-//     }
-//     if(dieFlag==5)
-//     {
+      fh=fopen("frame_4onD.txt","r");
+      printDie(fh);
+    }
+    if(dieFlag==5)
+    {
       
-//       fh=fopen("frame_5onD.txt","r");
-//       printDie(fh);
-//     }
-//     if(dieFlag==6)
-//     {
+      fh=fopen("frame_5onD.txt","r");
+      printDie(fh);
+    }
+    if(dieFlag==6)
+    {
       
-//       fh=fopen("frame_6onD.txt","r");
-//       printDie(fh);
-//     }
-
-// }
-
-
-// void printDie(FILE *fh)
-// {
-//   printGridFaster();
-//   if(fh!=NULL)
-//   {
-//     char c;
-//     while((c=fgetc(fh))!=EOF)
-//     putchar(c);
-//     fclose(fh);
-//     usleep(100000);
-//   }else
-//   {
-//     printf("error opening file");
-//   }
-//     return;
-// }
+      fh=fopen("frame_6onD.txt","r");
+      printDie(fh);
+    }
+    return 1;
+}
 
 
-// void printDieClear(FILE *fh)
-// {
-//   printGridFaster();
-//   if(fh!=NULL)
-//   {
-//     char c;
-//     while((c=fgetc(fh))!=EOF)
-//     putchar(c);
-//     fclose(fh);
-//   }else
-//   {
-//     printf("error opening file");
-//   }
-//     return;
-// }
+void printDie(FILE *fh)
+{ printf("\033[2J");    
+  printf("\033[H");
+
+  printGridFaster();
+  if(fh!=NULL)
+  {
+    char c;
+    while((c=fgetc(fh))!=EOF)
+    putchar(c);
+    fclose(fh);
+    usleep(100000);
+  }else
+  {
+    printf("error opening file");
+  }
+    return;
+}
+
+
+void printDieClear(FILE *fh)
+{
+  printGridFaster();
+  if(fh!=NULL)
+  {
+    char c;
+    while((c=fgetc(fh))!=EOF)
+    putchar(c);
+    fclose(fh);
+  }else
+  {
+    printf("error opening file");
+  }
+    return;
+}
 
 
 // dogeSnLflag was a == and = issue
